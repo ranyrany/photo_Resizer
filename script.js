@@ -44,6 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const calcPixelBadge = document.getElementById('calcPixelBadge');
   const dimChips = document.querySelectorAll('.dim-chip');
 
+  // Dimension Aspect Ratio Lock & Original Dimension Elements
+  const dimAspectLockBtn = document.getElementById('dimAspectLockBtn');
+  const dimAspectLockIcon = document.getElementById('dimAspectLockIcon');
+  const dimAspectLockText = document.getElementById('dimAspectLockText');
+  const dimOrigInfoBar = document.getElementById('dimOrigInfoBar');
+  const dimOrigSizeLabel = document.getElementById('dimOrigSizeLabel');
+  const btnUseOrigDim = document.getElementById('btnUseOrigDim');
+  const dimScaleChips = document.querySelectorAll('.dim-scale-chip');
+
   // Fit Mode Controls (Padding vs Crop)
   const fitModeBtns = document.querySelectorAll('.fit-mode-btn');
   const paddingColorPanel = document.getElementById('paddingColorPanel');
@@ -85,6 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dpi: 300,
     presetName: '여권 (35×45mm)'
   };
+
+  // Dimension Aspect Ratio Lock State (기본값: 비율 유지 켜짐)
+  let isDimAspectLocked = true;
+  let currentDimRatio = 35 / 45; // width / height
+  let lastUploadedDimensions = null; // { w, h }
 
   let currentFitMode = 'padding'; // 'padding' | 'crop'
   let currentPaddingColor = '#ffffff'; // hex or 'transparent'
@@ -169,13 +183,115 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================
   // 3. Exact Dimension Controls (cm, mm, inch, px + DPI) (신규 확장)
   // ========================================================
-  [dimWidthInput, dimHeightInput].forEach(inp => {
-    inp.addEventListener('input', () => {
-      currentDimension.presetName = '';
+  // Helper: Format dimension values appropriately for each unit
+  function formatDimValue(val, unit) {
+    if (unit === 'px') return Math.max(1, Math.round(val));
+    if (unit === 'inch') return Math.max(0.01, parseFloat(val.toFixed(2)));
+    return Math.max(0.1, parseFloat(val.toFixed(1)));
+  }
+
+  // Width Input with Aspect Ratio Lock
+  dimWidthInput.addEventListener('input', () => {
+    currentDimension.presetName = '';
+    dimChips.forEach(c => c.classList.remove('active'));
+
+    const newW = parseFloat(dimWidthInput.value);
+    if (!isNaN(newW) && newW > 0) {
+      if (isDimAspectLocked && currentDimRatio > 0) {
+        const newH = formatDimValue(newW / currentDimRatio, dimUnitSelect.value);
+        dimHeightInput.value = newH;
+      } else {
+        const curH = parseFloat(dimHeightInput.value);
+        if (curH > 0) currentDimRatio = newW / curH;
+      }
+    }
+    updateDimensionCalculations();
+  });
+
+  // Height Input with Aspect Ratio Lock
+  dimHeightInput.addEventListener('input', () => {
+    currentDimension.presetName = '';
+    dimChips.forEach(c => c.classList.remove('active'));
+
+    const newH = parseFloat(dimHeightInput.value);
+    if (!isNaN(newH) && newH > 0) {
+      if (isDimAspectLocked && currentDimRatio > 0) {
+        const newW = formatDimValue(newH * currentDimRatio, dimUnitSelect.value);
+        dimWidthInput.value = newW;
+      } else {
+        const curW = parseFloat(dimWidthInput.value);
+        if (curW > 0) currentDimRatio = curW / newH;
+      }
+    }
+    updateDimensionCalculations();
+  });
+
+  // Aspect Ratio Lock Toggle Button (비율 고정 켜기/끄기)
+  if (dimAspectLockBtn) {
+    dimAspectLockBtn.addEventListener('click', () => {
+      isDimAspectLocked = !isDimAspectLocked;
+      const w = parseFloat(dimWidthInput.value) || 1;
+      const h = parseFloat(dimHeightInput.value) || 1;
+
+      if (isDimAspectLocked) {
+        currentDimRatio = w / h;
+        dimAspectLockBtn.classList.add('active');
+        if (dimAspectLockIcon) dimAspectLockIcon.className = 'fa-solid fa-link';
+        if (dimAspectLockText) dimAspectLockText.textContent = '비율 고정';
+        dimAspectLockBtn.title = '가로/세로 비율 고정 (켜짐: 하나만 수정해도 다른 쪽이 자동 계산됩니다)';
+      } else {
+        dimAspectLockBtn.classList.remove('active');
+        if (dimAspectLockIcon) dimAspectLockIcon.className = 'fa-solid fa-link-slash';
+        if (dimAspectLockText) dimAspectLockText.textContent = '비율 자유';
+        dimAspectLockBtn.title = '가로/세로 비율 고정 해제됨 (가로와 세로를 독립적으로 자유 변경)';
+      }
+    });
+  }
+
+  // Quick Scale Chips (75%, 50%, 25%, 200%)
+  dimScaleChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const scale = parseFloat(chip.dataset.scale);
+      if (isNaN(scale) || scale <= 0) return;
+
+      const curW = parseFloat(dimWidthInput.value) || 1;
+      const curH = parseFloat(dimHeightInput.value) || 1;
+
+      const newW = formatDimValue(curW * scale, dimUnitSelect.value);
+      const newH = formatDimValue(curH * scale, dimUnitSelect.value);
+
+      dimWidthInput.value = newW;
+      dimHeightInput.value = newH;
+      currentDimension.presetName = `${Math.round(scale * 100)}% 조절`;
       dimChips.forEach(c => c.classList.remove('active'));
+
       updateDimensionCalculations();
     });
   });
+
+  // Apply Original Uploaded Dimension Button
+  if (btnUseOrigDim) {
+    btnUseOrigDim.addEventListener('click', () => {
+      if (!lastUploadedDimensions) return;
+      dimWidthInput.value = lastUploadedDimensions.w;
+      dimHeightInput.value = lastUploadedDimensions.h;
+      dimUnitSelect.value = 'px';
+      dimDpiGroup.style.display = 'none';
+
+      currentDimRatio = lastUploadedDimensions.w / lastUploadedDimensions.h;
+      isDimAspectLocked = true;
+      if (dimAspectLockBtn) {
+        dimAspectLockBtn.classList.add('active');
+        if (dimAspectLockIcon) dimAspectLockIcon.className = 'fa-solid fa-link';
+        if (dimAspectLockText) dimAspectLockText.textContent = '비율 고정';
+      }
+
+      currentDimension.presetName = `원본 (${lastUploadedDimensions.w}×${lastUploadedDimensions.h}px)`;
+      dimChips.forEach(c => c.classList.remove('active'));
+      updateDimensionCalculations();
+      showToast(`📷 업로드된 사진 원본 크기(${lastUploadedDimensions.w}×${lastUploadedDimensions.h}px)가 적용되었습니다.`);
+    });
+  }
 
   dimUnitSelect.addEventListener('change', () => {
     const unit = dimUnitSelect.value;
@@ -206,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dimHeightInput.value = h;
       dimUnitSelect.value = unit;
       dimDpiSelect.value = dpi;
+      currentDimRatio = w / h;
 
       if (unit === 'px') {
         dimDpiGroup.style.display = 'none';
@@ -388,9 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSettingsBadge() {
     let sizeDesc = '';
     if (currentResizeType === 'ratio') {
-      const ratioStr = currentRatio.type === 'custom' 
-        ? `${currentRatio.w}:${currentRatio.h}` 
-        : currentRatio.type;
+      let ratioStr = currentRatio.type;
+      if (currentRatio.type === 'custom') {
+        ratioStr = `${currentRatio.w}:${currentRatio.h}`;
+      } else if (currentRatio.type === 'original') {
+        ratioStr = '원본 비율 유지';
+      }
       sizeDesc = `비율 ${ratioStr}`;
     } else {
       const pxDim = convertUnitsToPixels(currentDimension.w, currentDimension.h, currentDimension.unit, currentDimension.dpi);
@@ -494,6 +614,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     queueSection.style.display = 'flex';
 
+    // 업로드된 첫 번째 사진의 원본 크기 자동 감지 및 바 갱신
+    const probeImg = new Image();
+    const tempUrl = URL.createObjectURL(validImageFiles[0]);
+    probeImg.onload = () => {
+      lastUploadedDimensions = {
+        w: probeImg.naturalWidth,
+        h: probeImg.naturalHeight
+      };
+      if (dimOrigInfoBar && dimOrigSizeLabel) {
+        dimOrigSizeLabel.textContent = `${probeImg.naturalWidth} × ${probeImg.naturalHeight} px`;
+        dimOrigInfoBar.style.display = 'flex';
+      }
+      URL.revokeObjectURL(tempUrl);
+    };
+    probeImg.src = tempUrl;
+
     // Snapshot of current configuration settings for these jobs
     const currentSettings = {
       resizeType: currentResizeType,
@@ -543,9 +679,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let specLabel = '';
     if (job.settings.resizeType === 'ratio') {
-      const ratioLabel = job.settings.ratio.type === 'custom' 
-        ? `${job.settings.ratio.w}:${job.settings.ratio.h}` 
-        : job.settings.ratio.type;
+      let ratioLabel = job.settings.ratio.type;
+      if (job.settings.ratio.type === 'custom') {
+        ratioLabel = `${job.settings.ratio.w}:${job.settings.ratio.h}`;
+      } else if (job.settings.ratio.type === 'original') {
+        ratioLabel = '원본 비율';
+      }
       specLabel = `비율 ${ratioLabel}`;
     } else {
       specLabel = `${job.settings.dimension.w}${job.settings.dimension.unit}`;
@@ -714,8 +853,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dim = job.settings.dimension;
         targetDimensions = convertUnitsToPixels(dim.w, dim.h, dim.unit, dim.dpi);
       } else {
-        const targetRatio = job.settings.ratio.w / job.settings.ratio.h;
-        targetDimensions = computeCanvasDimensions(effectiveW, effectiveH, targetRatio);
+        if (job.settings.ratio.type === 'original') {
+          targetDimensions = { w: effectiveW, h: effectiveH, canvasW: effectiveW, canvasH: effectiveH };
+        } else {
+          const targetRatio = job.settings.ratio.w / job.settings.ratio.h;
+          targetDimensions = computeCanvasDimensions(effectiveW, effectiveH, targetRatio);
+        }
       }
 
       job.targetWidth = targetDimensions.w || targetDimensions.canvasW;
@@ -727,9 +870,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (settingsTag) {
         let modeLabel = job.settings.fitMode === 'padding' ? 'Padding' : 'Crop';
-        let specStr = job.settings.resizeType === 'dimension'
-          ? `${job.settings.dimension.w}${job.settings.dimension.unit}`
-          : (job.settings.ratio.type === 'custom' ? `${job.settings.ratio.w}:${job.settings.ratio.h}` : job.settings.ratio.type);
+        let specStr = '';
+        if (job.settings.resizeType === 'dimension') {
+          specStr = `${job.settings.dimension.w}${job.settings.dimension.unit}`;
+        } else if (job.settings.ratio.type === 'original') {
+          specStr = '원본 비율';
+        } else if (job.settings.ratio.type === 'custom') {
+          specStr = `${job.settings.ratio.w}:${job.settings.ratio.h}`;
+        } else {
+          specStr = job.settings.ratio.type;
+        }
         const rotLabel = job.rotation > 0 ? ` • ${job.rotation}°` : '';
         settingsTag.textContent = `${specStr} • ${modeLabel}${rotLabel}`;
       }

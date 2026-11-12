@@ -119,6 +119,15 @@
             <span class="ratio-tag">와이드 • 유튜브</span>
           </label>
 
+          <label class="ratio-btn" data-ratio="original" data-w="0" data-h="0">
+            <input type="radio" name="aspectRatio" value="original">
+            <div class="ratio-icon-preview original-icon">
+              <i class="fa-solid fa-image" style="color: #6366f1;"></i>
+            </div>
+            <span class="ratio-name">원본 비율</span>
+            <span class="ratio-tag">사진 비율 그대로</span>
+          </label>
+
           <label class="ratio-btn custom" data-ratio="custom">
             <input type="radio" name="aspectRatio" value="custom">
             <div class="ratio-icon-preview custom-icon">
@@ -164,13 +173,31 @@
           </div>
         </div>
 
+        <!-- 업로드된 사진 원본 크기 감지 및 원클릭 적용 바 -->
+        <div class="dim-orig-info-bar" id="dimOrigInfoBar" style="display: none;">
+          <div class="dim-orig-info-left">
+            <i class="fa-solid fa-camera" style="color: #6366f1;"></i>
+            <span>업로드된 사진 원본 크기: <strong id="dimOrigSizeLabel">1920 × 1080 px</strong></span>
+          </div>
+          <button type="button" class="btn-use-orig-dim" id="btnUseOrigDim" title="업로드된 사진의 원본 크기를 가로/세로 입력창에 즉시 입력">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>이 크기로 적용하기</span>
+          </button>
+        </div>
+
         <div class="dimension-input-card">
           <div class="dim-input-group">
             <label for="dimWidthInput">가로 (Width)</label>
             <input type="number" id="dimWidthInput" value="35" min="1" step="any">
           </div>
 
-          <span class="dim-x">×</span>
+          <!-- 가로/세로 비율 연결(잠금) 버튼 -->
+          <div class="dim-lock-group">
+            <button type="button" class="dim-lock-btn active" id="dimAspectLockBtn" title="가로/세로 비율 고정 (켜짐: 하나만 수정해도 다른 쪽이 자동 계산됩니다)">
+              <i class="fa-solid fa-link" id="dimAspectLockIcon"></i>
+              <span class="dim-lock-label" id="dimAspectLockText">비율 고정</span>
+            </button>
+          </div>
 
           <div class="dim-input-group">
             <label for="dimHeightInput">세로 (Height)</label>
@@ -200,6 +227,20 @@
           <div class="calculated-pixel-wrap">
             <span class="calc-label">최종 캔버스 픽셀:</span>
             <span class="calc-pixel-badge" id="calcPixelBadge">413 × 531 px</span>
+          </div>
+        </div>
+
+        <!-- 빠른 퍼센트(%) 축소/확대 버튼 줄 -->
+        <div class="dim-scale-quick-row">
+          <span class="dim-scale-title">
+            <i class="fa-solid fa-down-left-and-up-right-to-center" style="color: #6366f1;"></i>
+            빠른 크기 축소/확대:
+          </span>
+          <div class="dim-scale-chips">
+            <button type="button" class="dim-scale-chip" data-scale="0.75" title="현재 크기를 75%로 축소">75% 축소</button>
+            <button type="button" class="dim-scale-chip highlight" data-scale="0.5" title="현재 크기를 50% 반으로 축소">50% (절반 축소)</button>
+            <button type="button" class="dim-scale-chip" data-scale="0.25" title="현재 크기를 25%로 축소">25% 축소</button>
+            <button type="button" class="dim-scale-chip" data-scale="2.0" title="현재 크기를 200%로 확대">200% 확대</button>
           </div>
         </div>
       </div>
