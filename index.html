@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Image Resizer - 스마트 사진 편집 & 리사이저</title>
+
+  <!-- Open Graph & SEO Meta Tags (GitHub Pages & SNS 공유 최적화) -->
+  <meta name="description" content="인스타그램, 유튜브, 쇼츠 등 원하는 비율로 사진을 완벽하게 맞추는 스마트 웹 리사이저. 여백 패딩 및 크롭 지원, 클립보드 붙여넣기, 일괄 ZIP 다운로드.">
+  <meta property="og:title" content="Smart Image Resizer - 스마트 사진 편집 & 비율 맞춤기">
+  <meta property="og:description" content="여백 채우기(Padding) 또는 크롭(Crop)으로 원하는 비율로 사진을 리사이즈하세요. 100% 브라우저 내 안전 무료 실행.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="logo.png">
+
+  <!-- Pretendard Font & Font Awesome 6 Icons -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       1. Top Header Bar (요구사항 1, 2)
+       - 좌측: logo.png (클릭 시 https://nanalab.kr)
+       - 우측: Smart Image Resizer
+       ========================================== -->
+  <header class="app-header">
+    <div class="header-left">
+      <a href="https://nanalab.kr" target="_blank" rel="noopener" class="logo-link" title="nanalab.kr 공식 사이트로 이동">
+        <img src="logo.png" alt="Nana Lab Logo" class="header-logo">
+      </a>
+    </div>
+    <div class="header-right">
+      <h1 class="app-title">
+        <i class="fa-solid fa-crop-simple" style="color: #6366f1;"></i>
+        <span>Smart Image Resizer</span>
+      </h1>
+      <span class="app-badge">v1.0</span>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       2. Main Content Container
+       ========================================== -->
+  <main class="main-content">
+
+    <!-- Intro Headline -->
+    <div class="intro-hero">
+      <div class="intro-badge">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: #8b5cf6;"></i>
+        <span>고품질 비율 변환 • 여백 패딩 & 스마트 크롭</span>
+      </div>
+      <h2 class="intro-title">사진 비율을 완벽하게 맞춤 조절하세요</h2>
+      <p class="intro-desc">인스타그램, 유튜브, 쇼츠, 증명사진 등 원하는 비율을 선택하고 여백 채우기 또는 크롭으로 손쉽게 변환하세요.</p>
+    </div>
+
+    <!-- ==========================================
+         3. Resizing Controls Panel (요구사항 4, 5, 6, 7 & 치수/압축 확장)
+         ========================================== -->
+    <section class="controls-panel">
+
+      <!-- (Mode Switcher) 비율 맞춤 vs 실제 치수 맞춤(cm, mm, inch, px) -->
+      <div class="resize-type-switcher">
+        <button type="button" class="type-tab-btn active" id="tabRatioMode" data-target="ratioBlock">
+          <i class="fa-solid fa-ruler-combined"></i>
+          <span>화면 비율 맞춤 (1:1, 16:9, 9:16...)</span>
+        </button>
+        <button type="button" class="type-tab-btn" id="tabDimensionMode" data-target="dimensionBlock">
+          <i class="fa-solid fa-ruler"></i>
+          <span>실제 규격 치수 맞춤 (cm, mm, inch, px)</span>
+        </button>
+      </div>
+
+      <!-- (A-1) 캔버스 비율 선택 (요구사항 4: 1:1, 3:4, 4:3, 9:16, 16:9, 커스텀) -->
+      <div class="control-block" id="ratioBlock">
+        <div class="control-label-row">
+          <span class="control-label">
+            <i class="fa-solid fa-shapes" style="color: #6366f1;"></i>
+            캔버스 비율 선택
+          </span>
+          <span class="control-hint">변환할 목표 화면 비율을 선택하세요</span>
+        </div>
+
+        <div class="ratio-options-grid">
+          <label class="ratio-btn active" data-ratio="1:1" data-w="1" data-h="1">
+            <input type="radio" name="aspectRatio" value="1:1" checked>
+            <div class="ratio-icon-preview square"></div>
+            <span class="ratio-name">1:1</span>
+            <span class="ratio-tag">정사각형 • 인스타</span>
+          </label>
+
+          <label class="ratio-btn" data-ratio="3:4" data-w="3" data-h="4">
+            <input type="radio" name="aspectRatio" value="3:4">
+            <div class="ratio-icon-preview portrait-34"></div>
+            <span class="ratio-name">3:4</span>
+            <span class="ratio-tag">증명 • 인물사진</span>
+          </label>
+
+          <label class="ratio-btn" data-ratio="4:3" data-w="4" data-h="3">
+            <input type="radio" name="aspectRatio" value="4:3">
+            <div class="ratio-icon-preview landscape-43"></div>
+            <span class="ratio-name">4:3</span>
+            <span class="ratio-tag">표준 • 일반사진</span>
+          </label>
+
+          <label class="ratio-btn" data-ratio="9:16" data-w="9" data-h="16">
+            <input type="radio" name="aspectRatio" value="9:16">
+            <div class="ratio-icon-preview portrait-916"></div>
+            <span class="ratio-name">9:16</span>
+            <span class="ratio-tag">쇼츠 • 릴스 • 틱톡</span>
+          </label>
+
+          <label class="ratio-btn" data-ratio="16:9" data-w="16" data-h="9">
+            <input type="radio" name="aspectRatio" value="16:9">
+            <div class="ratio-icon-preview landscape-169"></div>
+            <span class="ratio-name">16:9</span>
+            <span class="ratio-tag">와이드 • 유튜브</span>
+          </label>
+
+          <label class="ratio-btn custom" data-ratio="custom">
+            <input type="radio" name="aspectRatio" value="custom">
+            <div class="ratio-icon-preview custom-icon">
+              <i class="fa-solid fa-pen-ruler"></i>
+            </div>
+            <span class="ratio-name">커스텀</span>
+            <span class="ratio-tag">직접 입력</span>
+          </label>
+        </div>
+
+        <!-- 커스텀 비율 직접 입력창 (커스텀 선택 시 표시) -->
+        <div class="custom-ratio-input-wrap" id="customRatioWrap" style="display: none;">
+          <span class="custom-input-label">가로 / 세로 비율 입력:</span>
+          <div class="custom-inputs-row">
+            <input type="number" id="customWidth" value="5" min="1" max="999" placeholder="가로 (W)">
+            <span class="colon">:</span>
+            <input type="number" id="customHeight" value="7" min="1" max="999" placeholder="세로 (H)">
+            <span class="custom-badge" id="customRatioBadge">5:7 비율</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- (A-2) 실제 치수 직접 입력 (cm, mm, inch, px + DPI) (신규 확장) -->
+      <div class="control-block" id="dimensionBlock" style="display: none;">
+        <div class="control-label-row">
+          <span class="control-label">
+            <i class="fa-solid fa-ruler-combined" style="color: #6366f1;"></i>
+            원하는 크기 치수 직접 입력
+          </span>
+          <span class="control-hint">인쇄 규격(mm/cm/inch) 또는 픽셀(px) 크기로 정확하게 맞춤</span>
+        </div>
+
+        <!-- 퀵 규격 프리셋 칩 -->
+        <div class="dimension-preset-row">
+          <span class="dim-preset-title"><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> 빠른 규격:</span>
+          <div class="dim-preset-chips">
+            <button type="button" class="dim-chip" data-w="35" data-h="45" data-unit="mm" data-dpi="300">🪪 여권 (35×45mm)</button>
+            <button type="button" class="dim-chip" data-w="30" data-h="40" data-unit="mm" data-dpi="300">📄 반명함 (30×40mm)</button>
+            <button type="button" class="dim-chip" data-w="90" data-h="50" data-unit="mm" data-dpi="300">💳 명함 (90×50mm)</button>
+            <button type="button" class="dim-chip" data-w="4" data-h="6" data-unit="inch" data-dpi="300">🖼️ 4×6 인화 (4×6inch)</button>
+            <button type="button" class="dim-chip" data-w="1920" data-h="1080" data-unit="px" data-dpi="72">🖥️ 웹 FHD (1920×1080px)</button>
+            <button type="button" class="dim-chip" data-w="1080" data-h="1080" data-unit="px" data-dpi="72">📱 인스타 (1080×1080px)</button>
+          </div>
+        </div>
+
+        <div class="dimension-input-card">
+          <div class="dim-input-group">
+            <label for="dimWidthInput">가로 (Width)</label>
+            <input type="number" id="dimWidthInput" value="35" min="1" step="any">
+          </div>
+
+          <span class="dim-x">×</span>
+
+          <div class="dim-input-group">
+            <label for="dimHeightInput">세로 (Height)</label>
+            <input type="number" id="dimHeightInput" value="45" min="1" step="any">
+          </div>
+
+          <div class="dim-input-group unit-group">
+            <label for="dimUnitSelect">단위 (Unit)</label>
+            <select id="dimUnitSelect" class="dim-select">
+              <option value="mm" selected>mm (밀리미터)</option>
+              <option value="cm">cm (센티미터)</option>
+              <option value="inch">inch (인치)</option>
+              <option value="px">px (픽셀)</option>
+            </select>
+          </div>
+
+          <div class="dim-input-group dpi-group" id="dimDpiGroup">
+            <label for="dimDpiSelect">해상도 (DPI)</label>
+            <select id="dimDpiSelect" class="dim-select">
+              <option value="300" selected>300 DPI (고품질 인쇄/여권)</option>
+              <option value="150">150 DPI (일반 문서/출력)</option>
+              <option value="72">72 DPI (웹/화면 표준)</option>
+            </select>
+          </div>
+
+          <!-- 실시간 계산된 픽셀 뱃지 -->
+          <div class="calculated-pixel-wrap">
+            <span class="calc-label">최종 캔버스 픽셀:</span>
+            <span class="calc-pixel-badge" id="calcPixelBadge">413 × 531 px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- (B) 리사이징 방식 선택 (요구사항 5: Padding vs Crop) -->
+      <div class="control-block">
+        <div class="control-label-row">
+          <span class="control-label">
+            <i class="fa-solid fa-shapes" style="color: #ec4899;"></i>
+            리사이징 맞춤 방식
+          </span>
+          <span class="control-hint">종횡비 불일치 시 사진 처리 방식을 선택하세요</span>
+        </div>
+
+        <div class="fit-mode-grid">
+          <!-- 요구사항 6: Padding (여백 채우기) -->
+          <label class="fit-mode-btn active" data-mode="padding">
+            <input type="radio" name="fitMode" value="padding" checked>
+            <div class="fit-mode-content">
+              <div class="fit-title-row">
+                <i class="fa-solid fa-border-none" style="color: #6366f1;"></i>
+                <span class="fit-name">Padding (여백 채우기)</span>
+                <span class="fit-badge recommend">추천</span>
+              </div>
+              <p class="fit-desc">사진이 잘리지 않도록 100% 원본을 유지하며, 남는 공간에 여백을 채웁니다.</p>
+            </div>
+          </label>
+
+          <!-- 요구사항 7: Crop (자르기) -->
+          <label class="fit-mode-btn" data-mode="crop">
+            <input type="radio" name="fitMode" value="crop">
+            <div class="fit-mode-content">
+              <div class="fit-title-row">
+                <i class="fa-solid fa-crop" style="color: #ec4899;"></i>
+                <span class="fit-name">Crop (비율 맞춰 자르기)</span>
+              </div>
+              <p class="fit-desc">여백 없이 캔버스를 꽉 채우며, 비율을 맞추기 위해 가장자리를 잘라냅니다.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- 요구사항 6: 여백 색상 선택기 (Padding 모드일 때 활성화) -->
+        <div class="padding-color-panel" id="paddingColorPanel">
+          <div class="color-picker-header">
+            <span class="color-panel-title">
+              <i class="fa-solid fa-palette" style="color: #f59e0b;"></i>
+              여백(Padding) 색상 선택
+            </span>
+            <span class="color-panel-desc">원하는 배경 색상을 자유롭게 지정하세요</span>
+          </div>
+
+          <div class="color-options-row">
+            <!-- 프리셋 색상 칩 -->
+            <div class="preset-chips">
+              <button type="button" class="color-chip active" data-color="#ffffff" style="background: #ffffff; border: 2px solid #cbd5e1;" title="흰색 (기본값)"></button>
+              <button type="button" class="color-chip" data-color="#000000" style="background: #000000;" title="검은색"></button>
+              <button type="button" class="color-chip" data-color="#f8fafc" style="background: #f8fafc; border: 1px solid #e2e8f0;" title="라이트 그레이"></button>
+              <button type="button" class="color-chip" data-color="#1e293b" style="background: #1e293b;" title="다크 네이비"></button>
+              <button type="button" class="color-chip" data-color="#fef2f2" style="background: #fef2f2; border: 1px solid #fecaca;" title="연핑크"></button>
+              <button type="button" class="color-chip" data-color="#eff6ff" style="background: #eff6ff; border: 1px solid #bfdbfe;" title="연하늘"></button>
+              <button type="button" class="color-chip" data-color="transparent" style="background: repeating-conic-gradient(#cbd5e1 0% 25%, #ffffff 0% 50%) 50% / 12px 12px;" title="투명 배경 (PNG 저장 권장)"></button>
+            </div>
+
+            <!-- 커스텀 컬러 피커 -->
+            <div class="custom-color-picker-box">
+              <input type="color" id="customColorInput" value="#ffffff" title="색상 직접 고르기">
+              <input type="text" id="customColorText" value="#FFFFFF" maxlength="7" spellcheck="false" title="HEX 코드">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- (C) 용량 압축 및 목표 용량 최적화 (신규 확장) -->
+      <div class="control-block">
+        <div class="control-label-row">
+          <span class="control-label">
+            <i class="fa-solid fa-file-zipper" style="color: #10b981;"></i>
+            용량 압축 & 파일 크기 조절
+          </span>
+          <span class="control-hint">제출 기관/사이트에서 요구하는 용량 한도(KB)에 딱 맞춤</span>
+        </div>
+
+        <div class="compress-options-card">
+          <!-- 압축 모드 라디오 (품질 조절 vs 목표 용량 한도) -->
+          <div class="compress-mode-row">
+            <label class="compress-radio active">
+              <input type="radio" name="compressStrategy" value="smartQuality" checked>
+              <span>⚡ 스마트 화질 압축</span>
+            </label>
+            <label class="compress-radio">
+              <input type="radio" name="compressStrategy" value="targetSize">
+              <span>🎯 목표 용량 이하로 맞춤 (이력서/공공기관 제출용)</span>
+            </label>
+          </div>
+
+          <!-- 1) 스마트 화질 압축 패널 (기본값) -->
+          <div class="strategy-subpanel" id="smartQualityPanel">
+            <div class="slider-row">
+              <div class="slider-label-group">
+                <span class="slider-title">압축 품질 (Quality):</span>
+                <span class="slider-val-badge" id="qualityValBadge">85% (고화질)</span>
+              </div>
+              <input type="range" id="qualityRange" min="20" max="100" value="85" step="5">
+              <span class="slider-desc">높을수록 선명하며, 낮출수록 파일 용량이 수십 KB 수준까지 극적으로 작아집니다.</span>
+            </div>
+          </div>
+
+          <!-- 2) 목표 용량 제한 패널 -->
+          <div class="strategy-subpanel" id="targetSizePanel" style="display: none;">
+            <div class="target-size-header">
+              <span class="target-size-title"><i class="fa-solid fa-bullseye" style="color: #ef4444;"></i> 최대 목표 용량 설정:</span>
+              <span class="target-size-sub">이미지가 이 용량을 절대 초과하지 않도록 최적 품질을 자동 탐색합니다.</span>
+            </div>
+
+            <!-- 빠른 용량 선택 칩 -->
+            <div class="target-quick-chips">
+              <button type="button" class="target-chip" data-kb="100">100 KB 이하</button>
+              <button type="button" class="target-chip" data-kb="200">200 KB 이하</button>
+              <button type="button" class="target-chip active" data-kb="300">300 KB 이하</button>
+              <button type="button" class="target-chip" data-kb="500">500 KB 이하 (추천)</button>
+              <button type="button" class="target-chip" data-kb="1024">1 MB (1024KB) 이하</button>
+            </div>
+
+            <div class="target-input-row">
+              <label for="customTargetKbInput">직접 입력:</label>
+              <div class="target-input-box">
+                <input type="number" id="customTargetKbInput" value="300" min="20" max="20000" step="10">
+                <span class="unit">KB 이하</span>
+              </div>
+              <span class="target-status-badge" id="targetStatusBadge">최대 300 KB로 자동 최적화</span>
+            </div>
+          </div>
+
+          <!-- 실시간 예상 압축 범위 안내 -->
+          <div class="compression-guideline-box">
+            <i class="fa-solid fa-circle-info" style="color: #6366f1;"></i>
+            <span class="guideline-text" id="compressGuidelineText">
+              예상 용량: 해상도 및 모드에 따라 약 <strong>60 KB ~ 450 KB</strong> 수준으로 초경량 압축 가능합니다.
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==========================================
+         4. Drag & Drop Upload Zone (요구사항 3)
+         ========================================== -->
+    <section class="dropzone-container" id="dropzone" role="button" tabindex="0" aria-label="이미지 파일 업로드 영역">
+      <!-- Hidden File Input -->
+      <input 
+        type="file" 
+        id="fileInput" 
+        multiple 
+        accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,.jpg,.jpeg,.png,.webp,.bmp,.gif" 
+        style="display: none;"
+      >
+
+      <div class="drop-icon-wrap">
+        <i class="fa-solid fa-images"></i>
+      </div>
+
+      <h3 class="dropzone-headline">Upload or Drop your images!</h3>
+      <p class="dropzone-subtext">사진 파일을 이곳으로 드래그하거나 버튼을 눌러 선택하세요 <span class="clipboard-hint"><i class="fa-solid fa-paste"></i> (화면에서 Ctrl + V로 붙여넣기도 가능)</span></p>
+
+      <button type="button" class="btn-upload" id="browseBtn">
+        <i class="fa-solid fa-folder-open"></i>
+        <span>사진 선택하기</span>
+      </button>
+
+      <!-- 지원 파일 포맷 뱃지 -->
+      <div class="supported-formats">
+        <span class="formats-label">지원 이미지 포맷</span>
+        <div class="formats-pills-row">
+          <span class="format-pill">JPG / JPEG</span>
+          <span class="format-pill">PNG</span>
+          <span class="format-pill">WEBP</span>
+          <span class="format-pill">BMP</span>
+          <span class="format-pill">GIF</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         5. Image Queue & Result Section (요구사항 8, 9, 10, 11)
+         ========================================== -->
+    <section class="queue-section" id="queueSection" style="display: none;">
+      <div class="queue-header">
+        <div class="queue-title-group">
+          <h4 class="queue-title">
+            <i class="fa-solid fa-list-check" style="color: #6366f1;"></i>
+            <span>리사이즈 작업 목록</span>
+            <span class="queue-count" id="queueCount">0개 사진</span>
+          </h4>
+          <span class="queue-info-badge" id="currentSettingsBadge">비율 1:1 • Padding #FFFFFF</span>
+        </div>
+
+        <!-- 요구사항 11: 모든 사진 작업 끝나면 일괄 zip 다운로드 활성화 -->
+        <button id="batchDownloadBtn" class="btn-batch-download" disabled title="모든 리사이즈 사진을 ZIP으로 일괄 다운로드">
+          <i class="fa-solid fa-file-zipper"></i>
+          <span>전체 ZIP 일괄 다운로드</span>
+        </button>
+      </div>
+
+      <!-- Individual Image Cards will be injected here via script.js -->
+      <div class="file-list" id="fileList"></div>
+    </section>
+
+  </main>
+
+  <!-- Large Preview Modal (요구사항: 결과물 대형 미리보기 확대 팝업) -->
+  <div id="previewModal" class="preview-modal" role="dialog" aria-modal="true" aria-label="사진 미리보기">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fa-solid fa-magnifying-glass-plus" style="color: #6366f1;"></i>
+          <h3 class="modal-file-name" id="modalFileName">파일명.jpg</h3>
+          <span class="modal-badge" id="modalBadge">1:1 • 1080x1080</span>
+        </div>
+        <button type="button" class="btn-modal-close" id="modalCloseBtn" aria-label="닫기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="checkerboard-bg">
+          <img id="modalPreviewImg" src="" alt="Resized Large Preview" class="modal-img">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="modal-hint"><i class="fa-solid fa-info-circle"></i> ESC 키나 바깥 영역을 클릭하면 닫힙니다.</span>
+        <button type="button" class="btn-modal-download" id="modalDownloadBtn">
+          <i class="fa-solid fa-download"></i>
+          <span>이 사진 다운로드</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastMsg" class="toast-msg"></div>
+
+  <!-- JSZip Library (요구사항 11: 로컬 오프라인 구동) -->
+  <script src="libs/jszip.min.js"></script>
+
+  <!-- Application Script -->
+  <script src="script.js"></script>
+</body>
+</html>
